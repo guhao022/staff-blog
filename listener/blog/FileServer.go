@@ -7,7 +7,6 @@ import (
 	"time"
 	"fmt"
 	"github.com/num5/axiom"
-	"github.com/robertkrimen/otto/file"
 )
 
 type FileHandler struct {
@@ -20,6 +19,10 @@ func newFileHandler(save string, ctx *axiom.Context) *FileHandler {
 		savePath: save,
 		ctx: ctx,
 	}
+}
+
+func (fh *FileHandler) index(w http.ResponseWriter, r *http.Request) {
+	//
 }
 
 // 上传文件接口
