@@ -14,7 +14,7 @@ func (b *BlogListener) compileBlog(ctx *axiom.Context) {
 	ctx.Reply("编译成功，请登录 http://" + BLOG_HOST + " 查看")
 }
 
-func (b *BlogListener) webserver(ctx *axiom.Context, port string) {
+func (b *BlogListener) blogserver(ctx *axiom.Context, port string) {
 	cmd := exec.Command(WORKER_DIR + "/chca", "http", port)
 
 	if err := cmd.Start(); err != nil {

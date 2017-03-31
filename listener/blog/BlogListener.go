@@ -34,7 +34,7 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 				if len(matches) >= 3 {
 					port = matches[2]
 				}
-				b.webserver(ctx, port)
+				b.blogserver(ctx, port)
 			},
 		},{
 			// 更新博客生成器

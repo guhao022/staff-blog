@@ -43,8 +43,6 @@ func UnTarGz(srcFilePath string, destDirPath string) error {
 			// Get files from archive
 			// Create diretory before create file
 			err = os.MkdirAll(destDirPath, os.ModePerm)
-			println(destDirPath)
-
 			if err != nil {
 				return err
 			}

@@ -6,40 +6,24 @@ import (
 	"io"
 	"time"
 	"fmt"
+	"github.com/num5/axiom"
+	"github.com/robertkrimen/otto/file"
 )
 
-type FileServer struct {
-
+type FileHandler struct {
+	savePath string
+	ctx *axiom.Context
 }
 
-func indexHandle(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println("获取页面失败")
-		}
-	}()
-	http.Request{}
-
-	// 上传页面
-	w.Header().Add("Content-Type", "text/html")
-	w.WriteHeader(200)
-	html := `
-		<html>
-	    <head>
-	        <title>Golang Upload Files</title>
-	    </head>
-	    <body>
-	        <form id="uploadForm"  enctype="multipart/form-data" action="/upload" method="POST">
-	            <p>Golang Upload</p> <br/>
-	            <input type="file" id="file1" name="userfile" multiple />	<br/>
-	            <input type="submit" value="Upload">
-	        </form>
-	   	</body>
-		</html>`
-	io.WriteString(w, html)
+func newFileHandler(save string, ctx *axiom.Context) *FileHandler {
+	return FileHandler{
+		savePath: save,
+		ctx: ctx,
+	}
 }
+
 // 上传文件接口
-func upload(w http.ResponseWriter, r *http.Request) {
+func (fh *FileHandler) upload(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("文件上传异常")
@@ -49,28 +33,36 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	if "POST" == r.Method {
 
 		r.ParseMultipartForm(32 << 20)	//在使用r.MultipartForm前必须先调用ParseMultipartForm方法，参数为最大缓存
-		// fmt.Println(r.MultipartForm)
-		// fmt.Println(r.MultipartReader())
+
 		if r.MultipartForm != nil && r.MultipartForm.File != nil {
 			fhs := r.MultipartForm.File["file"]		//获取所有上传文件信息
-			num := len(fhs)
 
-			fmt.Printf("总文件数：%d 个文件", num)
+			fh.ctx.Reply("总文件数：%d 个文件", len(fhs))
 
 			//循环对每个文件进行处理
 			for n, fheader := range fhs {
 				//获取文件名
 				filename := fheader.Filename
 
+				save := fh.savePath + "/" +filename
+
+				//检查文件是否存在
+				_, err := os.Stat(filename)
+				if err != nil && !os.IsExist(err) {
+					fh.ctx.Reply("博客文件已经存在： %s", err.Error())
+					continue
+				}
+
 				//结束文件
 				file,err := fheader.Open()
 				if err != nil {
-					fmt.Println(err)
+					fh.ctx.Reply("文件处理错误： %s", err.Error())
 				}
 
 				//保存文件
 				defer file.Close()
-				f, err := os.Create(filename)
+
+				f, err := os.Create(save)
 				defer f.Close()
 				io.Copy(f, file)
 
@@ -78,12 +70,9 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				fstat,_ := f.Stat()
 
 				//打印接收信息
-				fmt.Fprintf(w, "%s  NO.: %d  Size: %d KB  Name：%s\n", time.Now().Format("2006-01-02 15:04:05"), n, fstat.Size()/1024, filename)
-				fmt.Printf("%s  NO.: %d  Size: %d KB  Name：%s\n", time.Now().Format("2006-01-02 15:04:05"), n, fstat.Size()/1024, filename)
+				fh.ctx.Reply("%s  NO.: %d  Size: %d KB  Name：%s\n", time.Now().Format("2006-01-02 15:04:05"), n, fstat.Size()/1024, filename)
 
 			}
-		} else {
-			indexHandle(w, r)
 		}
 
 		return
