@@ -25,7 +25,7 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 			},
 		},{
 			// 开启chca内部webserver
-			Regex: "博客|博客编译|更新博客|博客更新|编译markdown|编译MARKDOWN|markdown编译|MARKDOWN编译",
+			Regex: "开启博客|开启webserver|开启服务器|打开博客服务器|打开web|打开web服务器",
 			HandlerFunc: func(ctx *axiom.Context) {
 				var port string = "9900"
 				regexp := regexp.MustCompile(`(端口：|端口:|port：|port:)(\d+)`)
@@ -34,7 +34,10 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 				if len(matches) >= 3 {
 					port = matches[2]
 				}
-				b.blogserver(ctx, port)
+				go func() {
+					b.blogserver(ctx, port)
+				}()
+
 			},
 		},{
 			// 更新博客生成器
@@ -49,7 +52,23 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 				}
 				b.updateChca(ctx, m)
 			},
-		},
+		},{
+			// 上传博客
+			Regex: "上传博客|上传博客文件",
+			HandlerFunc: func(ctx *axiom.Context) {
+				UPLOAD_TEMPLATE := os.Getenv("UPLOAD_TEMPLATE")
+				go func() {
+
+					fh.Http()
+				}()
+
+			},
+		},/*{
+			Regex: "",
+			HandlerFunc: func(ctx *axiom.Context) {
+				ctx.Reply("未识别命令，so so so sorry ~ ~ ~ ")
+			},
+		},*/
 	}
 }
 
