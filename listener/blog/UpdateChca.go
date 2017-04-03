@@ -27,12 +27,14 @@ func (b *BlogListener) updateChca(ctx *axiom.Context, m string) {
 	ctx.Reply("下载完成，开始解压缩...")
 
 	// 解压chca
-	err = archive.UnTarGz(tarFile, WORKER_DIR)
+	err = archive.UnTarGz(tarFile, b.WorkerDir)
 	if err != nil {
 		ctx.Reply("解压失败，错误信息：" + err.Error())
 		return
 	}
 	ctx.Reply("解压缩完成，复制文件...")
+
+	os.Remove(tarFile)
 
 	ctx.Reply(m + "成功")
 

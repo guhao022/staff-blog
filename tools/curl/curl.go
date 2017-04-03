@@ -22,7 +22,6 @@ var (
 )
 
 type (
-
 	Task struct {
 		Url   string
 		Title string

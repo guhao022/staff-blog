@@ -1,9 +1,9 @@
 package curl
 
 import (
-	"strings"
-	"os"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 	"unicode/utf8"
 )

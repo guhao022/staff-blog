@@ -2,17 +2,24 @@ package blog
 
 import (
 	"github.com/num5/axiom"
-	"os"
-	"strings"
 	"regexp"
+	"strings"
 )
 
-type BlogListener struct{}
-
-var (
-	WORKER_DIR = os.Getenv("CHCA_WORKER_DIR")
-	BLOG_HOST = os.Getenv("BLOG_HOST")
-)
+type BlogListener struct {
+	// 博客网址
+	Host string
+	// 工作文件夹
+	WorkerDir string
+	// 博客markdown源文件存放文件夹
+	MarkdownDir string
+	// 上传界面模版文件夹
+	UploadTpl string
+	// 博客编译目录
+	HtmlDir string
+	// chca博客生成器下载地址
+	ChcaUrl string
+}
 
 func (b *BlogListener) Handle() []*axiom.Listener {
 
@@ -23,7 +30,7 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 			HandlerFunc: func(ctx *axiom.Context) {
 				b.compileBlog(ctx)
 			},
-		},{
+		}, {
 			// 开启chca内部webserver
 			Regex: "开启博客|开启webserver|开启服务器|打开博客服务器|打开web|打开web服务器",
 			HandlerFunc: func(ctx *axiom.Context) {
@@ -34,12 +41,10 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 				if len(matches) >= 3 {
 					port = matches[2]
 				}
-				go func() {
-					b.blogserver(ctx, port)
-				}()
+				b.blogserver(ctx, port)
 
 			},
-		},{
+		}, {
 			// 更新博客生成器
 			Regex: "更新chca|更新博客生成器|下载chca|下载博客生成器",
 			HandlerFunc: func(ctx *axiom.Context) {
@@ -52,31 +57,20 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 				}
 				b.updateChca(ctx, m)
 			},
-		},{
+		}, {
 			// 上传博客
 			Regex: "上传博客|上传博客文件",
 			HandlerFunc: func(ctx *axiom.Context) {
-				UPLOAD_TEMPLATE := os.Getenv("UPLOAD_TEMPLATE")
-				go func() {
-
-					fh.Http()
-				}()
+				markdown := b.WorkerDir + "/" + b.MarkdownDir
+				fh := newFileHandler(b.UploadTpl, markdown, ctx)
+				go fh.Http()
 
 			},
-		},/*{
+		}, /*{
 			Regex: "",
 			HandlerFunc: func(ctx *axiom.Context) {
 				ctx.Reply("未识别命令，so so so sorry ~ ~ ~ ")
 			},
 		},*/
 	}
-}
-
-// 创建文件
-func createFile(name string) (*os.File, error) {
-	err := os.MkdirAll(string([]rune(name)[0:strings.LastIndex(name, "/")]), 0755)
-	if err != nil {
-		return nil, err
-	}
-	return os.Create(name)
 }
