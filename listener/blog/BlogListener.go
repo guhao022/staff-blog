@@ -25,7 +25,7 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 
 	return []*axiom.Listener{
 		{
-			// 编译博客
+			// 编译博客xia
 			Regex: "编译博客|博客编译|更新博客|博客更新|编译markdown|编译MARKDOWN|markdown编译|MARKDOWN编译",
 			HandlerFunc: func(ctx *axiom.Context) {
 				b.compileBlog(ctx)
@@ -57,20 +57,6 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 				}
 				b.updateChca(ctx, m)
 			},
-		}, {
-			// 上传博客
-			Regex: "上传博客|上传博客文件",
-			HandlerFunc: func(ctx *axiom.Context) {
-				markdown := b.WorkerDir + "/" + b.MarkdownDir
-				fh := newFileHandler(b.UploadTpl, markdown, ctx)
-				go fh.Http()
-
-			},
-		}, /*{
-			Regex: "",
-			HandlerFunc: func(ctx *axiom.Context) {
-				ctx.Reply("未识别命令，so so so sorry ~ ~ ~ ")
-			},
-		},*/
+		},
 	}
 }

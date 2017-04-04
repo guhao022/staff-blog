@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"encoding/json"
+	"path/filepath"
+	"strings"
 )
 
 type FileHandler struct {
@@ -26,8 +29,10 @@ func newFileHandler(tpl, save string, ctx *axiom.Context) *FileHandler {
 
 func (fh *FileHandler) Http() {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(fh.tplPath+"/assets/"))))
+	http.Handle("/file", http.StripPrefix("/file/", http.FileServer(http.Dir(fh.savePath))))
 	http.HandleFunc("/", fh.index)
 	http.HandleFunc("/upload", fh.upload)
+	http.HandleFunc("/files", fh.filewolk)
 	fh.ctx.Reply("文件上传服务监听端口：%d", 8800)
 	err := http.ListenAndServe(":8800", nil)
 	if err != nil {
@@ -50,7 +55,7 @@ func (fh *FileHandler) index(w http.ResponseWriter, r *http.Request) {
 func (fh *FileHandler) upload(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println("文件上传异常")
+			fmt.Printf("文件上传异常:%s\n", err)
 		}
 	}()
 
@@ -61,6 +66,12 @@ func (fh *FileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		file, handler, err := r.FormFile("file")
 		if err != nil {
 			fh.ctx.Reply("未找到上传文件：%s", err)
+			resp := map[string]interface{} {
+				"code": 500,
+				"error": "未找到上传文件:"+err.Error(),
+			}
+			out, _ := json.Marshal(resp)
+			w.Write(out)
 			return
 		}
 
@@ -74,6 +85,12 @@ func (fh *FileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		} else {
 			if Exist(save) {
 				fh.ctx.Reply("博客《%s》文件已经存在", filename)
+				resp := map[string]interface{} {
+					"code": 500,
+					"error": "博客《"+filename+"》文件已经存在",
+				}
+				out, _ := json.Marshal(resp)
+				w.Write(out)
 				return
 			}
 		}
@@ -82,6 +99,12 @@ func (fh *FileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		of, err := handler.Open()
 		if err != nil {
 			fh.ctx.Reply("文件处理错误： %s", err)
+			resp := map[string]interface{} {
+				"code": 500,
+				"error": "文件处理错误:"+err.Error(),
+			}
+			out, _ := json.Marshal(resp)
+			w.Write(out)
 			return
 		}
 		defer file.Close()
@@ -90,6 +113,12 @@ func (fh *FileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		f, err := os.Create(save)
 		if err != nil {
 			fh.ctx.Reply("创建文件失败： %s", err)
+			resp := map[string]interface{} {
+				"code": 500,
+				"error": "创建文件失败:"+err.Error(),
+			}
+			out, _ := json.Marshal(resp)
+			w.Write(out)
 			return
 		}
 		defer f.Close()
@@ -99,11 +128,69 @@ func (fh *FileHandler) upload(w http.ResponseWriter, r *http.Request) {
 		fstat, _ := f.Stat()
 
 		//打印接收信息
-		fh.ctx.Reply("上传时间:%s, Size: %dKB,  Name:%s\n", time.Now().Format("2006-01-02 15:04:05"), fstat.Size()/1024, filename)
+		print := fmt.Sprintf("上传时间:%s, Size: %dKB,  Name:%s\n", time.Now().Format("2006-01-02 15:04:05"), fstat.Size()/1024, filename)
+		fh.ctx.Reply(print)
 
-		w.Write([]byte("1"))
+		resp := map[string]interface{} {
+			"code": 0,
+			"msg": print,
+		}
+		out, _ := json.Marshal(resp)
+		w.Write(out)
+
 		return
 	}
+}
+
+func (fh *FileHandler) filewolk(w http.ResponseWriter, r *http.Request) {
+	dir := fh.savePath
+	var filemaps []string
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if ( f == nil ) {
+			return err
+		}
+		if f.IsDir() {
+			return nil
+		}
+
+		filename := strings.TrimLeft(path, fh.savePath)
+
+		filemaps = append(filemaps, filename)
+
+		return nil
+	})
+	if err != nil {
+		w.Write([]byte("filepath.Walk() returned" + err.Error()))
+	}
+
+	out, err := json.Marshal(filemaps)
+	w.Write(out)
+}
+
+func (fh *FileHandler) delete(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filename := r.FormValue("filename")
+
+	file := fh.savePath + "/" + filename
+
+	err := os.Remove(file)
+	if err != nil {
+		resp := map[string]interface{} {
+			"code": 500,
+			"error": "删除文件失败:"+err.Error(),
+		}
+		out, _ := json.Marshal(resp)
+		w.Write(out)
+		return
+	}
+
+	resp := map[string]interface{} {
+		"code": 0,
+		"error": "删除《" + filename + "》文件成功",
+	}
+	out, _ := json.Marshal(resp)
+	w.Write(out)
+	return
 }
 
 func Exist(filename string) bool {

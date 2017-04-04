@@ -22,7 +22,7 @@ func main() {
 		ChcaUrl: env.Get("CHCA_DOWNLOAD_URL"),
 	}
 
-	b := axiom.New()
+	b := axiom.New(env.Get("BOT_NAME"))
 	b.AddAdapter(axiom.NewShell(b))
 	b.Register(blogListener)
 
