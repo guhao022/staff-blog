@@ -1,11 +1,13 @@
 package blog
 
 import (
-	"github.com/num5/axiom"
 	"os/exec"
+
+	"github.com/num5/axiom"
 )
 
 func (b *BlogListener) compileBlog(ctx *axiom.Context) {
+
 	cmd := exec.Command(b.WorkerDir+"/chca", "compile")
 	cmd.Dir = b.WorkerDir
 	if err := cmd.Start(); err != nil {
