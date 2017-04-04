@@ -193,8 +193,3 @@ func (fh *FileHandler) delete(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func Exist(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
-}
-

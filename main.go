@@ -20,6 +20,8 @@ func main() {
 		UploadTpl: env.Get("UPLOAD_TEMPLATE"),
 		HtmlDir: env.Get("BLOG_HTML_DIR"),
 		ChcaUrl: env.Get("CHCA_DOWNLOAD_URL"),
+		ThemeUrl: env.Get("THEME_DEFAULT_URL"),
+		Theme: env.Get("THEME"),
 	}
 
 	b := axiom.New(env.Get("BOT_NAME"))

@@ -19,6 +19,10 @@ type BlogListener struct {
 	HtmlDir string
 	// chca博客生成器下载地址
 	ChcaUrl string
+	// theme下载地址
+	ThemeUrl string
+	// 启用的theme
+	Theme string
 }
 
 func (b *BlogListener) Handle() []*axiom.Listener {
