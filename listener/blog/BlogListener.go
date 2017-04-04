@@ -36,7 +36,7 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 			},
 		}, {
 			// 开启chca内部webserver
-			Regex: "开启博客|开启webserver|开启服务器|打开博客服务器|打开web|打开web服务器",
+			Regex: "开启博客|开启webserver|开启服务器|打开博客服务器|打开web|打开web服务器|打开服务器",
 			HandlerFunc: func(ctx *axiom.Context) {
 				var port string = "9900"
 				regexp := regexp.MustCompile(`(端口：|端口:|port：|port:)(\d+)`)

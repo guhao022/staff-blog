@@ -60,7 +60,7 @@ Axiom> 打开web服务器
 2. 编译博客|博客编译|更新博客|博客更新|编译markdown|编译MARKDOWN|markdown编译|MARKDOWN编译
 > 这条命令用于将markdown文件编译成博客html文件，编译好的可以用nginx或者apache部署
 
-3. 开启博客|开启webserver|开启服务器|打开博客服务器|打开web|打开web服务器
+3. 开启博客|开启webserver|开启服务器|打开博客服务器|打开web|打开web服务器|打开服务器
 > 开启博客内部服务器，默认端口9900，可以自定义端口，例如：
 ```bash
 Axiom> 开启webserver 端口:8080
