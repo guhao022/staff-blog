@@ -61,6 +61,14 @@ func (b *BlogListener) Handle() []*axiom.Listener {
 				}
 				b.updateChca(ctx, m)
 			},
+		}, {
+			// 上传博客
+			Regex: "上传博客|上传博客文件|上传markdown",
+			HandlerFunc: func(ctx *axiom.Context) {
+				markdown := b.WorkerDir + "/" + b.MarkdownDir
+				fh := newFileHandler(b.UploadTpl, markdown, ctx)
+				go fh.Http()
+			},
 		},
 	}
 }

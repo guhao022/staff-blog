@@ -1,9 +1,11 @@
-# chca
+# Staff 静态博客部署助手
 
 ### TODO
 
 - [x] 下载/更新 chca
 - [x] 使用chca自动部署博客
+- [ ] Docker部署项目
+- [ ] websocket适配器
 
 ### staff 说明
 staff是用来帮助用户部署静态博客的小助手，基于 [Axiom](https://github.com/num5/axiom) 运维机器人框架开发
@@ -63,6 +65,7 @@ Axiom> 打开web服务器
 3. 开启博客|开启webserver|开启服务器|打开博客服务器|打开web|打开web服务器|打开服务器
 > 开启博客内部服务器，默认端口9900，可以自定义端口，例如：
 ```bash
+// 以8080端口运行内置web服务器
 Axiom> 开启webserver 端口:8080
 ```
 
